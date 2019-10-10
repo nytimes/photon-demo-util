@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, Dict
 from threading import Thread, Timer
 
+from photon.common.json_common import JSONCommon
 from photon.common.tuuid_common import TUUIDCommon
 from photon.demo_util.common.messages import WorkNT
 from photon.demo_util.common.context_base import ContextBase
@@ -12,6 +13,10 @@ from photon.demo_util.common.context_base import ContextBase
 class IncomingDemo(Thread):
     """
     Poll a directory and queue files to worker bkgd threads.
+
+    NOTE: we often use this Incoming model with pulling a Pub/Sub subscription
+    asynchronously. The polling of a directory that you see here can be swapped
+    out with other queue, stream, and pub/sub mechanisms.
 
     """
 
@@ -26,6 +31,7 @@ class IncomingDemo(Thread):
         self._workq = ctx.workq
         self._util_cmd = ctx.util_cmd
         self._timeout = ctx.timeout
+        self._json = JSONCommon(ctx)
         self._tuuid = TUUIDCommon(ctx)
         self._check_interval_secs = ctx.check_interval_secs
         self._lastcheck_time = float(0)  # init to zero
@@ -43,11 +49,11 @@ class IncomingDemo(Thread):
             "event_type": "detail",
             "event": event,
             "util_cmd": self._util_cmd,
-            "message": f"{self._util_cmd} {event}:: tuuid: {tuuid}; filep: {filep}",
+            "message": (f"{self._util_cmd} {event}:: tuuid: {tuuid}; filep: {filep}",),
         }
 
         msgd.update(update)
-        self._logger.info(msgd)
+        self._logger.info(self._json.jsonsafe(msgd))
 
     def _submit_work(self, filepd: Dict[str, Any]) -> None:
         startdt = filepd["startdt"]
@@ -67,7 +73,7 @@ class IncomingDemo(Thread):
 
         if msgs:
             msg = "; ".join(msgs)
-            msg += f"; filep: {str(filep)}; "
+            msg += f"; filep: {filep}; "
             self._logger.warning(msg)
             return False
 
@@ -76,13 +82,9 @@ class IncomingDemo(Thread):
     def _process_filep(self, filep: Path) -> None:
         tuuid = self._tuuid.get_tuuid()
         valid = self._valid_filep(filep)
+        startdt = self._tuuid.extract_datetime(tuuid)
 
-        filepd = {
-            "tuuid": tuuid,
-            "filep": filep,
-            "valid": valid,
-            "startdt": self._tuuid.extract_datetime(tuuid),  # same datetime
-        }
+        filepd = {"tuuid": tuuid, "filep": filep, "valid": valid, "startdt": startdt}
 
         self._submit_work(filepd)
         self._log_event(filepd, "start")

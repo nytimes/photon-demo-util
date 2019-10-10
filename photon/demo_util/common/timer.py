@@ -8,6 +8,10 @@ class TimerDemo(Thread):
     """
     Sleep, log a success msg, then log periodic health checks.
 
+    NOTE: we use the health check logs as an alert metric for our applications.
+    If the health check log hasn't been seen in a given amount of time, an alert
+    will fire.
+
     """
 
     def __init__(self, ctx: ContextBase) -> None:

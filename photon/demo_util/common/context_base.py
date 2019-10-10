@@ -25,8 +25,9 @@ class ContextBase(ConfigContextCommon):
 
     DEMO_DIRP: Path
     INCOMING_DIRP: Path
-    OUTGOING_DIRP: Path
-    REJECT_DIRP: Path
+    MODIFIED_DIRP: Path
+    ORIGINAL_DIRP: Path
+    REJECTED_DIRP: Path
     VALID_EXTENSIONS: List[str]
 
     def __init__(self) -> None:  # TODO: Fix when stdlib is updated

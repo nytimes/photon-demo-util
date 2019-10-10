@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, List
 from datetime import datetime, timedelta
 
 from time_uuid import TimeUUID
@@ -44,6 +44,7 @@ class ResultNT(NamedTuple):
     beginworktd: timedelta
     endworktd: timedelta
     destdirp: Path
+    transforms: List[str]
 
 
 ResultNT.tuuid.__doc__ = "TimeUUID (field 0): Unique ID for each unit of work."
@@ -57,3 +58,4 @@ ResultNT.worker.__doc__ = "int (field 5): Worker index number."
 ResultNT.beginworktd.__doc__ = "timedelta (field 6): Timedelta for this file."
 ResultNT.endworktd.__doc__ = "timedelta (field 7): Timedelta for this file."
 ResultNT.destdirp.__doc__ = "Path (field 8): Destination directory path for this file."
+ResultNT.transforms.__doc__ = "List (field 9): List of completed file transforms."

@@ -1,2 +1,0 @@
-Photon Application Demo
-=======================

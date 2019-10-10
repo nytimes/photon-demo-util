@@ -1,14 +1,23 @@
 import traceback
+from typing import List
+from pathlib import Path
 from threading import Thread, Timer
+
+from wand.image import Image
 
 from photon.common.tuuid_common import TUUIDCommon
 from photon.demo_util.common.context_base import ContextBase
+from photon.demo_util.common.transforms import TransformsDemo
 from photon.demo_util.common.messages import WorkNT, ResultNT
 
 
 class WorkerDemo(Thread):
     """
-    Transform image and report results.
+    Transform image and queue work results.
+
+    NOTE: the Worker is where the bulk of the I/O- or CPU-related work occurs.
+    In this example, the worker is primarily transforming images, but tasks such
+    as API calls or heavy computations would fit well here.
 
     """
 
@@ -25,25 +34,34 @@ class WorkerDemo(Thread):
         self._workq = ctx.workq
         self._resultq = ctx.resultq
         self._tuuid = TUUIDCommon(ctx)
+        self._transforms = TransformsDemo(ctx)
         self._timeout = ctx.timeout
-        self._outgoing_dirp = ctx.OUTGOING_DIRP
-        self._reject_dirp = ctx.REJECT_DIRP
+        self._modified_dirp = ctx.MODIFIED_DIRP
+        self._original_dirp = ctx.ORIGINAL_DIRP
+        self._rejected_dirp = ctx.REJECTED_DIRP
         self._failfast_ev = ctx.failfast_ev
         self._startfast_br = ctx.startfast_br
+
+    def _save_original(self, filep: Path) -> None:
+        with Image(filename=str(filep)) as img:
+            copyp = self._original_dirp / filep.name
+            img.save(filename=str(copyp))
 
     def _process_work(self, worknt: WorkNT) -> None:
         beginworktd = self._tuuid.get_tza_utcdt() - worknt.startdt
         filep = worknt.filep
+        transforms: List[str] = []
 
         if filep.exists():
             if worknt.valid:
-                destdirp = self._outgoing_dirp
-                # TODO: transformations
+                self._save_original(filep)
+                transforms = self._transforms.run_transforms(str(filep))
+                destdirp = self._modified_dirp
             else:
-                destdirp = self._reject_dirp
+                destdirp = self._rejected_dirp
 
             new_name = destdirp / filep.name
-            filep.rename(new_name)  # move to destdirp
+            filep.rename(new_name)  # move to destination directory
         else:
             msg = (
                 "filepath does not currently exist; "
@@ -57,6 +75,7 @@ class WorkerDemo(Thread):
             "beginworktd": beginworktd,
             "endworktd": self._tuuid.get_tza_utcdt() - worknt.startdt,
             "destdirp": destdirp,
+            "transforms": transforms,
         }
 
         resultd = worknt._asdict()

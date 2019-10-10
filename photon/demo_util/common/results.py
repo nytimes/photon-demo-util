@@ -1,6 +1,7 @@
 import traceback
 from threading import Thread
 
+from photon.common.json_common import JSONCommon
 from photon.common.tuuid_common import TUUIDCommon
 from photon.demo_util.common.messages import ResultNT
 from photon.demo_util.common.context_base import ContextBase
@@ -9,6 +10,10 @@ from photon.demo_util.common.context_base import ContextBase
 class ResultsDemo(Thread):
     """
     Handle ResultNT messages from Workers.
+
+    NOTE: we use the Results thread to acknowledge Pub/Sub messages in addition
+    to the logging that you see below. We also use this thread to indicate to our
+    Redis cache that the work has completed.
 
     """
 
@@ -22,6 +27,7 @@ class ResultsDemo(Thread):
         self._logger.info("Results")
         self._util_cmd = ctx.util_cmd
         self._resultq = ctx.resultq
+        self._json = JSONCommon(ctx)
         self._tuuid = TUUIDCommon(ctx)
         self._failfast_ev = ctx.failfast_ev
         self._startfast_br = ctx.startfast_br
@@ -46,7 +52,7 @@ class ResultsDemo(Thread):
 
         msgd = resultnt._asdict()
         msgd.update(updated)
-        self._logger.info(msgd)
+        self._logger.info(self._json.jsonsafe(msgd))
 
     def run(self) -> None:
         """

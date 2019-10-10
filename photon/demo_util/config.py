@@ -15,7 +15,8 @@ LOG_FORMAT = (  # new style
 )
 
 DEMO_DIRP = Path("~/Desktop/demo").expanduser()
-INCOMING_DIRP = DEMO_DIRP / "incoming"
-OUTGOING_DIRP = DEMO_DIRP / "outgoing"
-REJECT_DIRP = DEMO_DIRP / "reject"
+INCOMING_DIRP = DEMO_DIRP / "incoming"  # input images
+MODIFIED_DIRP = DEMO_DIRP / "modified"  # modified images
+ORIGINAL_DIRP = DEMO_DIRP / "original"  # original images
+REJECTED_DIRP = DEMO_DIRP / "rejected"  # rejected original images (ex: png filetype)
 VALID_EXTENSIONS = [".JPEG", ".JPG"]

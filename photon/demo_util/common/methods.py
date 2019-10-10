@@ -20,7 +20,7 @@ def failfast(ctx: ContextBase) -> None:
     FailFastDemo(ctx).run()
 
 
-def handle_results(ctx: ContextBase) -> None:  # main thread
+def handle_results(ctx: ContextBase) -> None:
     """
     Handle the results of processing.
 
@@ -55,7 +55,7 @@ def start_incoming(ctx: ContextBase) -> None:
 
 def start_workers(ctx: ContextBase) -> None:
     """
-    Create shared data structures and start worker threads.
+    Start worker threads.
 
     Args:
         ctx: The Context object.
@@ -83,5 +83,6 @@ def update_ctx(ctx: ContextBase) -> None:
 
     # ensure existence of I/O directories
     ctx.INCOMING_DIRP.mkdir(parents=True, exist_ok=True)
-    ctx.OUTGOING_DIRP.mkdir(parents=True, exist_ok=True)
-    ctx.REJECT_DIRP.mkdir(parents=True, exist_ok=True)
+    ctx.MODIFIED_DIRP.mkdir(parents=True, exist_ok=True)
+    ctx.ORIGINAL_DIRP.mkdir(parents=True, exist_ok=True)
+    ctx.REJECTED_DIRP.mkdir(parents=True, exist_ok=True)
