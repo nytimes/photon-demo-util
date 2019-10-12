@@ -16,7 +16,7 @@ PACKAGE_VERSION = versionp.read_text().strip()
 requirementsp = filep.with_name("requirements.txt")
 REQUIRES = get_requires(requirementsp)
 
-README = filep.with_name("README.rst").read_text()
+README = filep.with_name("README.md").read_text()
 
 setup(
     name=PACKAGE_FULLNAME,
